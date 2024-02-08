@@ -9,7 +9,7 @@ interface HeaderProps {
 
 export function Header({ title, cartQuantityItems = 0 }: HeaderProps) {
   return (
-    <View className="flex-row items-center border-b border-slate-700 pb-5 mx-5">
+    <View className="mx-5 flex-row items-center border-b border-slate-700 pb-5">
       <View className="flex-1">
         <Image
           source={require('@/assets/logo.png')}
@@ -17,13 +17,13 @@ export function Header({ title, cartQuantityItems = 0 }: HeaderProps) {
           className="h-6 w-32"
         />
 
-        <Text className="text-white text-xl font-heading mt-2">{title}</Text>
+        <Text className="mt-2 font-heading text-xl text-white">{title}</Text>
       </View>
 
       {cartQuantityItems > 0 && (
         <TouchableOpacity activeOpacity={0.7} className="relative">
-          <View className="bg-lime-300 w-5 h-5 rounded-full items-center top-2 z-10 -right-2.5 justify-center">
-            <Text className="text-slate-900 font-bold text-xs">
+          <View className="-right-2.5 top-2 z-10 h-5 w-5 items-center justify-center rounded-full bg-lime-300">
+            <Text className="text-xs font-bold text-slate-900">
               {cartQuantityItems}
             </Text>
           </View>

@@ -14,12 +14,12 @@ export function CategoryButton({
   return (
     <Pressable
       className={clsx(
-        'bg-slate-800 px-4 border-2 border-slate-800 justify-center rounded-md h-10',
+        'h-10 justify-center rounded-md border-2 border-slate-800 bg-slate-800 px-4',
         isSelected && 'border-lime-300',
       )}
       {...props}
     >
-      <Text className="text-slate-100 font-subtitle text-sm">{title}</Text>
+      <Text className="font-subtitle text-sm text-slate-100">{title}</Text>
     </Pressable>
   )
 }
