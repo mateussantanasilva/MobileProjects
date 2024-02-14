@@ -4,15 +4,17 @@ import { useCartStore } from '@/stores/cart-store'
 import { PRODUCTS } from '@/utils/data/products'
 import { formatCurrency } from '@/utils/functions/format-currency'
 import { Feather } from '@expo/vector-icons'
-import { useLocalSearchParams, useNavigation } from 'expo-router'
+import { Redirect, useLocalSearchParams, useNavigation } from 'expo-router'
 import { Image, Text, View } from 'react-native'
 
 export default function Product() {
   const { id } = useLocalSearchParams()
-  const cartStore = useCartStore()
   const navigation = useNavigation()
+  const cartStore = useCartStore()
 
   const product = PRODUCTS.find((product) => product.id === id)
+
+  if (!product) return <Redirect href="/" />
 
   function handleAddProductToCart() {
     product && cartStore.add(product)
@@ -23,22 +25,24 @@ export default function Product() {
   return (
     <View className="flex-1">
       <Image
-        source={product?.cover}
-        alt={`Imagem do produto ${product?.title}`}
+        source={product.cover}
+        alt={`Imagem do produto ${product.title}`}
         resizeMode="cover"
         className="h-52 w-full"
       />
 
       <View className="mt-8 flex-1 p-5">
+        <Text className="font-heading text-xl text-white">{product.title}</Text>
+
         <Text className="my-2 font-heading text-2xl text-lime-400">
-          {formatCurrency(product?.price ?? 0)}
+          {formatCurrency(product.price ?? 0)}
         </Text>
 
         <Text className="mb-6 font-body text-base/6 text-slate-400">
-          {product?.description}
+          {product.description}
         </Text>
 
-        {product?.ingredients.map((ingredient) => (
+        {product.ingredients.map((ingredient) => (
           <Text
             key={ingredient}
             className="font-body text-base/6 text-slate-400"
