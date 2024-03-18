@@ -6,21 +6,31 @@ import { Input } from '@components/Input'
 import { useNavigation } from '@react-navigation/native'
 import { useState } from 'react'
 import { Alert } from 'react-native'
+import { createGroup } from 'src/storages/groups/createGroup'
+import { CustomError } from '@utils/CustomError'
 
 export function NewGroup() {
   const [group, setGroup] = useState('')
 
   const { navigate } = useNavigation()
 
-  function handleCreateGroup() {
-    if (!group)
-      return Alert.alert(
-        'Preencha o campo',
-        'Digite o nome do grupo para adicionar.',
-      )
+  async function handleCreateGroup() {
+    if (!group.trim())
+      return Alert.alert('Nova Turma', 'Digite o nome da turma para adicionar.')
 
-    navigate('players', { group })
-    setGroup('')
+    try {
+      await createGroup(group)
+
+      navigate('players', { group })
+
+      setGroup('')
+    } catch (error) {
+      if (error instanceof CustomError)
+        return Alert.alert('Nova Turma', error.message)
+
+      Alert.alert('Nova Turma', 'Não foi possível cadastrar uma nova turma.')
+      throw error
+    }
   }
 
   return (
