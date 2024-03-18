@@ -8,7 +8,7 @@ export async function addPlayerByGroup(newPlayer: PlayerDTO, group: string) {
   try {
     const storedPlayers = await getPlayersByGroup(group)
 
-    const playerAlreadyExists = storedPlayers.filter(
+    const playerAlreadyExists = storedPlayers.find(
       (player) => player.name === newPlayer.name,
     )
 
