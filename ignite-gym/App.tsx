@@ -1,4 +1,5 @@
 import { Loading } from '@components/Loading'
+import { AuthProvider } from '@contexts/AuthContext'
 import {
   useFonts,
   Roboto_400Regular,
@@ -20,7 +21,7 @@ export default function App() {
         translucent
       />
 
-      {loadedFonts ? <Routes /> : <Loading />}
+      <AuthProvider>{loadedFonts ? <Routes /> : <Loading />}</AuthProvider>
     </NativeBaseProvider>
   )
 }
