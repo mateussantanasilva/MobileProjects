@@ -1,12 +1,14 @@
 import { HStack, Heading, Icon, Image, Text, VStack } from 'native-base'
 import { TouchableOpacity, TouchableOpacityProps } from 'react-native'
 import { Entypo } from '@expo/vector-icons'
+import { ExerciseDTO } from 'src/@types/ExerciseDTO'
+import { api } from '@services/api'
 
 interface ExerciseCardProps extends TouchableOpacityProps {
-  name?: string
+  exercise: ExerciseDTO
 }
 
-export function ExerciseCard(props: ExerciseCardProps) {
+export function ExerciseCard({ exercise, ...props }: ExerciseCardProps) {
   return (
     <TouchableOpacity activeOpacity={0.7} {...props}>
       <HStack
@@ -19,9 +21,9 @@ export function ExerciseCard(props: ExerciseCardProps) {
       >
         <Image
           source={{
-            uri: 'https://conteudo.imguol.com.br/c/entretenimento/0c/2019/12/03/remada-unilateral-com-halteres-1575402100538_v2_600x600.jpg',
+            uri: `${api.defaults.baseURL}/exercise/thumb/${exercise.thumb}`,
           }}
-          alt="Imagem do exercício"
+          alt={`Imagem do exercício ${exercise.name}`}
           resizeMode="cover"
           w="16"
           h="16"
@@ -31,10 +33,10 @@ export function ExerciseCard(props: ExerciseCardProps) {
 
         <VStack flex="1">
           <Heading fontSize="lg" color="white" fontFamily="heading">
-            Remada unilateral
+            {exercise.name}
           </Heading>
           <Text fontSize="sm" color="gray.200" mt="1" numberOfLines={2}>
-            3 séries x 12 repetições
+            {exercise.series} séries x {exercise.repetitions} repetições
           </Text>
         </VStack>
 

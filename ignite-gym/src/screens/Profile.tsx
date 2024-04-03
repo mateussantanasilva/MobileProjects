@@ -11,46 +11,61 @@ import {
   VStack,
   useToast,
 } from 'native-base'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { TouchableOpacity } from 'react-native'
 import * as ImagePicker from 'expo-image-picker'
 import * as FileSystem from 'expo-file-system'
 import * as yup from 'yup'
 import { Controller, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
+import { CustomError } from '@utils/CustomError'
+import { AuthContext } from '@contexts/AuthContext'
+import { api } from '@services/api'
 
 const profileFormSchema = yup.object({
   name: yup.string().required('Preencha o campo de nome corretamente.'),
-  email: yup
-    .string()
-    .required('Preencha o campo de email corretamente.')
-    .email('O formato do email é inválido.'),
-  previousPassword: yup
-    .string()
-    .required('Preencha o campo de senha antiga corretamente.'),
+  email: yup.string(),
+  previousPassword: yup.string(),
   newPassword: yup
     .string()
-    .required('Preencha o campo de nova senha corretamente.')
-    .min(6, 'A senha deve ter no mínimo 6 dígito.'),
-  newPasswordConfirmed: yup
-    .string()
-    .required('Confirme sua nova senha.')
-    .oneOf([yup.ref('password'), ''], 'As senhas devem ser iguais.'),
+    .min(6, 'A senha deve ter no mínimo 6 dígitos.')
+    .nullable()
+    .transform((value) => value || null), // if the user clears the input before submitting the form, it ensures that the field is optional (return null instead '')
+  newPasswordConfirmed: yup.string().when('newPassword', {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    is: (field: any) => field, // if there is content in newPassword field
+    then: (schema) =>
+      schema
+        .required('Confime a nova senha.')
+        .nullable()
+        .transform((value) => value || null)
+        .oneOf(
+          [yup.ref('newPassword'), ''],
+          'As novas senhas devem ser iguais.',
+        ),
+  }),
 })
 type ProfileFormData = yup.InferType<typeof profileFormSchema>
 
 export function Profile() {
+  const { user, updateUserProfile } = useContext(AuthContext)
+
   const [isLoadindPhoto, setisLoadindPhoto] = useState(false)
   const [userPhoto, setUserPhoto] = useState(
     'https://github.com/mateussantanasilva.png',
   )
 
+  // if you need to set initial values, use defaultValues
   const {
     control,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     handleSubmit,
   } = useForm<ProfileFormData>({
     resolver: yupResolver(profileFormSchema),
+    defaultValues: {
+      name: user.name,
+      email: user.email,
+    },
   })
 
   const toast = useToast()
@@ -81,11 +96,12 @@ export function Profile() {
           title: 'Essa imagem é muito grande. Escolha uma de até 5MB.',
           placement: 'top',
           bg: 'red.600',
+          textAlign: 'center',
         })
 
       setUserPhoto(selectedPhoto.assets[0].uri)
     } catch (error) {
-      if (error instanceof Error) throw error
+      if (error instanceof CustomError || error instanceof Error) throw error
 
       throw new Error()
     } finally {
@@ -93,8 +109,40 @@ export function Profile() {
     }
   }
 
-  function handleUpdateProfile(data: ProfileFormData) {
-    console.log(data)
+  async function handleUpdateProfile(data: ProfileFormData) {
+    try {
+      const updatedUser = {
+        ...user,
+        name: data.name,
+      }
+
+      await api.put('/users', {
+        name: data.name,
+        password: data.newPassword,
+        old_password: data.previousPassword,
+      })
+
+      await updateUserProfile(updatedUser)
+
+      toast.show({
+        title: 'Pefil atualizado com sucesso!',
+        placement: 'top',
+        bgColor: 'green.700',
+        textAlign: 'center',
+      })
+    } catch (error) {
+      const isCustomError = error instanceof CustomError
+      const title = isCustomError
+        ? error.message
+        : 'Não foi possível atualizar o perfil. Tente novamente mais tarde.'
+
+      toast.show({
+        title,
+        placement: 'top',
+        bgColor: 'red.600',
+        textAlign: 'center',
+      })
+    }
   }
 
   return (
@@ -173,12 +221,11 @@ export function Profile() {
           <Controller
             control={control}
             name="newPassword"
-            render={({ field: { onChange, value } }) => (
+            render={({ field: { onChange } }) => (
               <Input
                 placeholder="Nova senha"
                 type="password"
                 bg="gray.600"
-                value={value}
                 onChangeText={onChange}
                 errorMessage={errors.newPassword?.message}
               />
@@ -188,12 +235,11 @@ export function Profile() {
           <Controller
             control={control}
             name="newPasswordConfirmed"
-            render={({ field: { onChange, value } }) => (
+            render={({ field: { onChange } }) => (
               <Input
                 placeholder="Confirme nova senha"
                 type="password"
                 bg="gray.600"
-                value={value}
                 onChangeText={onChange}
                 errorMessage={errors.newPasswordConfirmed?.message}
                 returnKeyType="send"
@@ -205,6 +251,7 @@ export function Profile() {
           <Button
             title="Atualizar"
             mt="4"
+            isLoading={isSubmitting}
             onPress={handleSubmit(handleUpdateProfile)}
           />
         </VStack>

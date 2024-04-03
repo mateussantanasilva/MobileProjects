@@ -1,13 +1,25 @@
-import { Center, Heading, Image, ScrollView, Text, VStack } from 'native-base'
+import {
+  Center,
+  Heading,
+  Image,
+  ScrollView,
+  Text,
+  VStack,
+  useToast,
+} from 'native-base'
 import { Input } from '@components/Input'
 import { Button } from '@components/Button'
 import { useNavigation } from '@react-navigation/native'
 import { Controller, useForm } from 'react-hook-form'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
+import { api } from '@services/api'
+import { CustomError } from '@utils/CustomError'
 
 import BgImage from '@assets/background.png'
 import LogoSvg from '@assets/logo.svg'
+import { useContext } from 'react'
+import { AuthContext } from '@contexts/AuthContext'
 
 const signUpFormSchema = yup.object({
   name: yup.string().required('Preencha o campo de nome corretamente.'),
@@ -18,7 +30,7 @@ const signUpFormSchema = yup.object({
   password: yup
     .string()
     .required('Preencha o campo de senha corretamente.')
-    .min(6, 'A senha deve ter no mínimo 6 dígito.'),
+    .min(6, 'A senha deve ter no mínimo 6 dígitos.'),
   passwordConfirmed: yup
     .string()
     .required('Confirme sua senha.')
@@ -33,13 +45,41 @@ export function SignUp() {
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<SignUpFormData>({
     resolver: yupResolver(signUpFormSchema),
   })
 
-  function handleCreateAccount(data: SignUpFormData) {
-    console.log(data)
+  const toast = useToast()
+
+  const { authenticateUser } = useContext(AuthContext)
+
+  async function handleCreateAccount({
+    name,
+    email,
+    password,
+  }: SignUpFormData) {
+    try {
+      await api.post('/users', {
+        name,
+        email,
+        password,
+      })
+
+      await authenticateUser(email, password)
+    } catch (error) {
+      const isCustomError = error instanceof CustomError
+      const title = isCustomError
+        ? error.message
+        : 'Não foi possível criar a conta. Tente novamente mais tarde.'
+
+      return toast.show({
+        title,
+        placement: 'top',
+        bg: 'red.600',
+        textAlign: 'center',
+      })
+    }
   }
 
   return (
@@ -72,10 +112,9 @@ export function SignUp() {
           <Controller
             control={control}
             name="name"
-            render={({ field: { onChange, value } }) => (
+            render={({ field: { onChange } }) => (
               <Input
                 placeholder="Nome"
-                value={value}
                 onChangeText={onChange}
                 errorMessage={errors.name?.message}
               />
@@ -85,12 +124,11 @@ export function SignUp() {
           <Controller
             control={control}
             name="email"
-            render={({ field: { onChange, value } }) => (
+            render={({ field: { onChange } }) => (
               <Input
                 placeholder="E-mail"
                 keyboardType="email-address"
                 autoCapitalize="none"
-                value={value}
                 onChangeText={onChange}
                 errorMessage={errors.email?.message}
               />
@@ -100,11 +138,10 @@ export function SignUp() {
           <Controller
             control={control}
             name="password"
-            render={({ field: { onChange, value } }) => (
+            render={({ field: { onChange } }) => (
               <Input
                 placeholder="Senha"
                 type="password"
-                value={value}
                 onChangeText={onChange}
                 errorMessage={errors.password?.message}
               />
@@ -114,11 +151,10 @@ export function SignUp() {
           <Controller
             control={control}
             name="passwordConfirmed"
-            render={({ field: { onChange, value } }) => (
+            render={({ field: { onChange } }) => (
               <Input
                 placeholder="Confirme a senha"
                 type="password"
-                value={value}
                 errorMessage={errors.passwordConfirmed?.message}
                 onChangeText={onChange}
                 onSubmitEditing={handleSubmit(handleCreateAccount)}
@@ -129,6 +165,7 @@ export function SignUp() {
 
           <Button
             title="Criar e acessar"
+            isLoading={isSubmitting}
             onPress={handleSubmit(handleCreateAccount)}
           />
         </Center>

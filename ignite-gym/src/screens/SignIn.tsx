@@ -1,14 +1,25 @@
-import { Center, Heading, Image, ScrollView, Text, VStack } from 'native-base'
+import {
+  Center,
+  Heading,
+  Image,
+  ScrollView,
+  Text,
+  VStack,
+  useToast,
+} from 'native-base'
 import { Input } from '@components/Input'
 import { Button } from '@components/Button'
-
-import BgImage from '@assets/background.png'
-import LogoSvg from '@assets/logo.svg'
 import { useNavigation } from '@react-navigation/native'
 import { AuthNavigationRoutesProps } from '@routes/auth.routes'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { Controller, useForm } from 'react-hook-form'
+import { useContext } from 'react'
+import { AuthContext } from '@contexts/AuthContext'
+import { CustomError } from '@utils/CustomError'
+
+import BgImage from '@assets/background.png'
+import LogoSvg from '@assets/logo.svg'
 
 const signInFormSchema = yup.object({
   email: yup
@@ -18,23 +29,42 @@ const signInFormSchema = yup.object({
   password: yup
     .string()
     .required('Preencha o campo de senha corretamente.')
-    .min(6, 'A senha deve ter no mínimo 6 dígito.'),
+    .min(6, 'A senha deve ter no mínimo 6 dígitos.'),
 })
 type SignInFormData = yup.InferType<typeof signInFormSchema>
 
 export function SignIn() {
   const { navigate } = useNavigation<AuthNavigationRoutesProps>()
 
+  const { authenticateUser } = useContext(AuthContext)
+
+  // if you need to set initial values, use defaultValues
   const {
     handleSubmit,
     control,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<SignInFormData>({
     resolver: yupResolver(signInFormSchema),
   })
 
-  function handleAuthenticate(data: SignInFormData) {
-    console.log(data)
+  const toast = useToast()
+
+  async function handleAuthenticate({ email, password }: SignInFormData) {
+    try {
+      await authenticateUser(email, password)
+    } catch (error) {
+      const isCustomError = error instanceof CustomError
+      const title = isCustomError
+        ? error.message
+        : 'Não foi possível entrar. Tente novamente mais tarde.'
+
+      toast.show({
+        title,
+        placement: 'top',
+        bgColor: 'red.600',
+        textAlign: 'center',
+      })
+    }
   }
 
   return (
@@ -67,12 +97,11 @@ export function SignIn() {
           <Controller
             control={control}
             name="email"
-            render={({ field: { onChange, value } }) => (
+            render={({ field: { onChange } }) => (
               <Input
                 placeholder="E-mail"
                 keyboardType="email-address"
                 autoCapitalize="none"
-                value={value}
                 onChangeText={onChange}
                 errorMessage={errors.email?.message}
               />
@@ -82,11 +111,10 @@ export function SignIn() {
           <Controller
             control={control}
             name="password"
-            render={({ field: { onChange, value } }) => (
+            render={({ field: { onChange } }) => (
               <Input
                 placeholder="Senha"
                 type="password"
-                value={value}
                 onChangeText={onChange}
                 errorMessage={errors.password?.message}
                 returnKeyType="send"
@@ -95,7 +123,11 @@ export function SignIn() {
             )}
           />
 
-          <Button title="Acessar" onPress={handleSubmit(handleAuthenticate)} />
+          <Button
+            title="Acessar"
+            isLoading={isSubmitting}
+            onPress={handleSubmit(handleAuthenticate)}
+          />
         </Center>
 
         <Center mt="24">

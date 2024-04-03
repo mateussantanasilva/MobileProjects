@@ -1,6 +1,11 @@
 import { HStack, Heading, Text, VStack } from 'native-base'
+import { HistoricDTO } from 'src/@types/HistoricDTO'
 
-export function HistoricCard() {
+interface HistoricCardProps {
+  exerciseDone: HistoricDTO
+}
+
+export function HistoricCard({ exerciseDone }: HistoricCardProps) {
   return (
     <HStack
       w="full"
@@ -20,15 +25,15 @@ export function HistoricCard() {
           textTransform="capitalize"
           numberOfLines={1}
         >
-          Costas
+          {exerciseDone.group}
         </Heading>
         <Text color="gray.100" fontSize="lg" numberOfLines={1}>
-          Puxada frontal
+          {exerciseDone.name}
         </Text>
       </VStack>
 
       <Text color="gray.300" fontSize="md">
-        08:56
+        {exerciseDone.hour}
       </Text>
     </HStack>
   )

@@ -7,86 +7,182 @@ import {
   ScrollView,
   Text,
   VStack,
+  useToast,
 } from 'native-base'
 import { Feather } from '@expo/vector-icons'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import { TouchableOpacity } from 'react-native'
+import { Button } from '@components/Button'
+import { CustomError } from '@utils/CustomError'
+import { api } from '@services/api'
+import { useCallback, useEffect, useState } from 'react'
+import { ExerciseDTO } from 'src/@types/ExerciseDTO'
+import { Loading } from '@components/Loading'
+import { AppNavigationRoutesProps } from '@routes/app.routes'
 
 import BodySvg from '@assets/body.svg'
 import SeriesSvg from '@assets/series.svg'
 import RepetitionsSvg from '@assets/repetitions.svg'
-import { Button } from '@components/Button'
+
+interface ExerciseRouteParams {
+  id: string
+}
 
 export function Exercise() {
-  const { goBack } = useNavigation()
+  const route = useRoute()
+  const { id } = route.params as ExerciseRouteParams
+
+  const { goBack, navigate } = useNavigation<AppNavigationRoutesProps>()
+
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSending, setIsSending] = useState(true)
+
+  const [exercise, setExercise] = useState<ExerciseDTO>({} as ExerciseDTO)
+
+  const toast = useToast()
+
+  async function handleRegisterExerciseInHistoric() {
+    try {
+      setIsSending(true)
+
+      await api.post('history', {
+        exercise_id: id,
+      })
+
+      toast.show({
+        title: 'Exercício registrado no histórico!',
+        placement: 'top',
+        textAlign: 'center',
+        bgColor: 'green.700',
+      })
+
+      navigate('historic')
+    } catch (error) {
+      const isCustomError = error instanceof CustomError
+      const title = isCustomError
+        ? error.message
+        : 'Não foi possível registrar o exercício. Tente novamente mais tarde.'
+
+      toast.show({
+        title,
+        placement: 'top',
+        textAlign: 'center',
+        bgColor: 'red.600',
+      })
+    } finally {
+      setIsSending(false)
+    }
+  }
+
+  const fetchExerciseDetails = useCallback(async () => {
+    try {
+      setIsLoading(true)
+
+      const response = await api.get(`/exercises/${id}`)
+
+      setExercise(response.data)
+    } catch (error) {
+      const isCustomError = error instanceof CustomError
+      const title = isCustomError
+        ? error.message
+        : 'Não foi possível carregar os detalhes do exercício. Tente novamente mais tarde.'
+
+      toast.show({
+        title,
+        placement: 'top',
+        textAlign: 'center',
+        bgColor: 'red.600',
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }, [id, toast])
+
+  useEffect(() => {
+    fetchExerciseDetails()
+  }, [fetchExerciseDetails])
 
   return (
     <VStack flex="1">
-      <VStack px="8" bg="gray.600" pt="12">
-        <TouchableOpacity activeOpacity={0.7} onPress={goBack}>
-          <Icon as={Feather} name="arrow-left" color="green.500" size="6" />
-        </TouchableOpacity>
+      {isLoading ? (
+        <Loading />
+      ) : (
+        <>
+          <VStack px="8" bg="gray.600" pt="12">
+            <TouchableOpacity activeOpacity={0.7} onPress={goBack}>
+              <Icon as={Feather} name="arrow-left" color="green.500" size="6" />
+            </TouchableOpacity>
 
-        <HStack
-          justifyContent="space-between"
-          mt="4"
-          mb="8"
-          alignItems="center"
-        >
-          <Heading
-            color="gray.100"
-            fontSize="lg"
-            fontFamily="heading"
-            mr="2"
-            flex="1"
-          >
-            Puxada frontal
-          </Heading>
-
-          <HStack alignItems="center">
-            <BodySvg />
-            <Text color="gray.200" textTransform="capitalize" ml="1">
-              Costas
-            </Text>
-          </HStack>
-        </HStack>
-      </VStack>
-
-      <ScrollView>
-        <VStack p="8">
-          <Image
-            source={{
-              uri: 'https://conteudo.imguol.com.br/c/entretenimento/0c/2019/12/03/remada-unilateral-com-halteres-1575402100538_v2_600x600.jpg',
-            }}
-            alt="Demonstração do exercício"
-            w="full"
-            h="80"
-            resizeMode="cover"
-            rounded="lg"
-            mb="3"
-          />
-
-          <Box bg="gray.600" rounded="md" pt="5" px="4" pb="4">
-            <HStack alignItems="center" justifyContent="space-evenly" mb="6">
-              <HStack alignItems="center">
-                <SeriesSvg />
-                <Text color="gray.200" ml="2">
-                  3 séries
-                </Text>
-              </HStack>
+            <HStack
+              justifyContent="space-between"
+              mt="4"
+              mb="8"
+              alignItems="center"
+            >
+              <Heading
+                color="gray.100"
+                fontSize="lg"
+                fontFamily="heading"
+                mr="2"
+                flex="1"
+              >
+                {exercise.name}
+              </Heading>
 
               <HStack alignItems="center">
-                <RepetitionsSvg />
-                <Text color="gray.200" ml="2">
-                  12 repetições
+                <BodySvg />
+                <Text color="gray.200" textTransform="capitalize" ml="1">
+                  {exercise.group}
                 </Text>
               </HStack>
             </HStack>
+          </VStack>
 
-            <Button title="Marcar como realizado" />
-          </Box>
-        </VStack>
-      </ScrollView>
+          <ScrollView>
+            <VStack p="8">
+              <Box rounded="lg" mb="3" overflow="hidden">
+                <Image
+                  source={{
+                    uri: `${api.defaults.baseURL}/exercise/demo/${exercise.demo}`,
+                  }}
+                  alt={`Demonstração do exercício ${exercise.name}`}
+                  w="full"
+                  h="80"
+                  resizeMode="cover"
+                />
+              </Box>
+
+              <Box bg="gray.600" rounded="md" pt="5" px="4" pb="4">
+                <HStack
+                  alignItems="center"
+                  justifyContent="space-evenly"
+                  mb="6"
+                >
+                  <HStack alignItems="center">
+                    <SeriesSvg />
+                    <Text color="gray.200" ml="2">
+                      {exercise.series} séries
+                    </Text>
+                  </HStack>
+
+                  <HStack alignItems="center">
+                    <RepetitionsSvg />
+                    <Text color="gray.200" ml="2">
+                      {exercise.repetitions} repetições
+                    </Text>
+                  </HStack>
+                </HStack>
+
+                <Button
+                  title="Marcar como realizado"
+                  isLoading={isSending}
+                  onPress={handleRegisterExerciseInHistoric}
+                />
+              </Box>
+            </VStack>
+          </ScrollView>
+        </>
+      )}
     </VStack>
   )
 }
