@@ -1,26 +1,15 @@
-import { Avatar } from '@components/Avatar'
 import { Button } from '@components/Button'
 import { Input } from '@components/Input'
 import { ScreenHeader } from '@components/ScreenHeader'
-import {
-  Center,
-  Heading,
-  ScrollView,
-  Skeleton,
-  Text,
-  VStack,
-  useToast,
-} from 'native-base'
-import { useContext, useState } from 'react'
-import { TouchableOpacity } from 'react-native'
-import * as ImagePicker from 'expo-image-picker'
-import * as FileSystem from 'expo-file-system'
+import { Heading, ScrollView, VStack, useToast } from 'native-base'
+import { useContext } from 'react'
 import * as yup from 'yup'
 import { Controller, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { CustomError } from '@utils/CustomError'
 import { AuthContext } from '@contexts/AuthContext'
 import { api } from '@services/api'
+import { AvatarSelector } from '@components/AvatarSelector'
 
 const profileFormSchema = yup.object({
   name: yup.string().required('Preencha o campo de nome corretamente.'),
@@ -50,11 +39,6 @@ type ProfileFormData = yup.InferType<typeof profileFormSchema>
 export function Profile() {
   const { user, updateUserProfile } = useContext(AuthContext)
 
-  const [isLoadindPhoto, setisLoadindPhoto] = useState(false)
-  const [userPhoto, setUserPhoto] = useState(
-    'https://github.com/mateussantanasilva.png',
-  )
-
   // if you need to set initial values, use defaultValues
   const {
     control,
@@ -69,45 +53,6 @@ export function Profile() {
   })
 
   const toast = useToast()
-
-  async function handleSelectUserPhoto() {
-    try {
-      setisLoadindPhoto(true)
-
-      const selectedPhoto = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 1, // 0 to 1
-        aspect: [4, 4],
-        allowsEditing: true,
-      })
-
-      if (selectedPhoto.canceled || !selectedPhoto.assets[0].uri) return
-
-      const photoInfo = await FileSystem.getInfoAsync(
-        selectedPhoto.assets[0].uri,
-      )
-
-      if (!photoInfo.exists) return
-
-      const photoSizeInMB = photoInfo.size / 1024 / 1024
-
-      if (photoSizeInMB > 5)
-        return toast.show({
-          title: 'Essa imagem é muito grande. Escolha uma de até 5MB.',
-          placement: 'top',
-          bg: 'red.600',
-          textAlign: 'center',
-        })
-
-      setUserPhoto(selectedPhoto.assets[0].uri)
-    } catch (error) {
-      if (error instanceof CustomError || error instanceof Error) throw error
-
-      throw new Error()
-    } finally {
-      setisLoadindPhoto(false)
-    }
-  }
 
   async function handleUpdateProfile(data: ProfileFormData) {
     try {
@@ -149,32 +94,10 @@ export function Profile() {
     <VStack flex="1">
       <ScreenHeader title="Perfil" />
 
-      <ScrollView>
-        <Center mt="6" px="10">
-          {isLoadindPhoto ? (
-            <Skeleton
-              w="33"
-              h="33"
-              rounded="full"
-              startColor="gray.500"
-              endColor="gray.400"
-            />
-          ) : (
-            <Avatar source={{ uri: userPhoto }} size={33} />
-          )}
+      <ScrollView px="10">
+        <AvatarSelector />
 
-          <TouchableOpacity activeOpacity={0.7} onPress={handleSelectUserPhoto}>
-            <Text
-              color="green.500"
-              fontWeight="bold"
-              fontSize="md"
-              mt="2"
-              mb="8"
-            >
-              Alterar foto
-            </Text>
-          </TouchableOpacity>
-
+        <VStack>
           <Controller
             control={control}
             name="name"
@@ -196,9 +119,9 @@ export function Profile() {
               <Input placeholder="E-mail" isDisabled bg="gray.600" />
             )}
           />
-        </Center>
+        </VStack>
 
-        <VStack px="10" mt="12" mb="9">
+        <VStack mt="12" mb="9">
           <Heading color="gray.200" fontSize="md" fontFamily="heading" mb="2">
             Alterar senha
           </Heading>
