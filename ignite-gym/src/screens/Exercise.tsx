@@ -12,13 +12,12 @@ import {
 import { Feather } from '@expo/vector-icons'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { TouchableOpacity } from 'react-native'
-import { Button } from '@components/Button'
 import { CustomError } from '@utils/CustomError'
 import { api } from '@services/api'
 import { useCallback, useEffect, useState } from 'react'
 import { ExerciseDTO } from 'src/@types/ExerciseDTO'
 import { Loading } from '@components/Loading'
-import { AppNavigationRoutesProps } from '@routes/app.routes'
+import { ExerciseRegisterButton } from '@components/ExerciseRegisterButton'
 
 import BodySvg from '@assets/body.svg'
 import SeriesSvg from '@assets/series.svg'
@@ -32,47 +31,13 @@ export function Exercise() {
   const route = useRoute()
   const { id } = route.params as ExerciseRouteParams
 
-  const { goBack, navigate } = useNavigation<AppNavigationRoutesProps>()
+  const { goBack } = useNavigation()
 
   const [isLoading, setIsLoading] = useState(true)
-  const [isSending, setIsSending] = useState(true)
 
   const [exercise, setExercise] = useState<ExerciseDTO>({} as ExerciseDTO)
 
   const toast = useToast()
-
-  async function handleRegisterExerciseInHistoric() {
-    try {
-      setIsSending(true)
-
-      await api.post('history', {
-        exercise_id: id,
-      })
-
-      toast.show({
-        title: 'Exercício registrado no histórico!',
-        placement: 'top',
-        textAlign: 'center',
-        bgColor: 'green.700',
-      })
-
-      navigate('historic')
-    } catch (error) {
-      const isCustomError = error instanceof CustomError
-      const title = isCustomError
-        ? error.message
-        : 'Não foi possível registrar o exercício. Tente novamente mais tarde.'
-
-      toast.show({
-        title,
-        placement: 'top',
-        textAlign: 'center',
-        bgColor: 'red.600',
-      })
-    } finally {
-      setIsSending(false)
-    }
-  }
 
   const fetchExerciseDetails = useCallback(async () => {
     try {
@@ -173,11 +138,7 @@ export function Exercise() {
                   </HStack>
                 </HStack>
 
-                <Button
-                  title="Marcar como realizado"
-                  isLoading={isSending}
-                  onPress={handleRegisterExerciseInHistoric}
-                />
+                <ExerciseRegisterButton exerciseId={id} />
               </Box>
             </VStack>
           </ScrollView>

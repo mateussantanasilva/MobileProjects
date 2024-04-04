@@ -1,5 +1,5 @@
 import { ExerciseCard } from '@components/ExerciseCard'
-import { GroupItem } from '@components/GroupItem'
+import { GroupList } from '@components/GroupList'
 import { HomeHeader } from '@components/HomeHeader'
 import { Loading } from '@components/Loading'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
@@ -7,44 +7,18 @@ import { AppNavigationRoutesProps } from '@routes/app.routes'
 import { api } from '@services/api'
 import { CustomError } from '@utils/CustomError'
 import { FlatList, HStack, Heading, Text, VStack, useToast } from 'native-base'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { ExerciseDTO } from 'src/@types/ExerciseDTO'
 
 export function Home() {
   const [isLoading, setIsLoading] = useState(true)
 
-  const [groups, setGroups] = useState<string[]>([])
   const [selectedGroup, setSelectedGroup] = useState('antebraço')
-
   const [exercises, setExercises] = useState<ExerciseDTO[]>([])
 
   const { navigate } = useNavigation<AppNavigationRoutesProps>()
 
   const toast = useToast()
-
-  const fetchGroups = useCallback(async () => {
-    try {
-      setIsLoading(true)
-
-      const response = await api.get('/groups')
-
-      setGroups(response.data)
-    } catch (error) {
-      const isCustomError = error instanceof CustomError
-      const title = isCustomError
-        ? error.message
-        : 'Não foi possível carregar os grupos musculares. Tente novamente mais tarde.'
-
-      toast.show({
-        title,
-        placement: 'top',
-        textAlign: 'center',
-        bgColor: 'red.600',
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }, [toast])
 
   const fetchExercisesByGroup = useCallback(async () => {
     try {
@@ -66,10 +40,6 @@ export function Home() {
     }
   }, [selectedGroup, toast])
 
-  useEffect(() => {
-    fetchGroups()
-  }, [fetchGroups])
-
   useFocusEffect(
     useCallback(() => {
       fetchExercisesByGroup()
@@ -80,24 +50,10 @@ export function Home() {
     <VStack flex="1">
       <HomeHeader />
 
-      <FlatList
-        data={groups}
-        keyExtractor={(item) => item}
-        renderItem={({ item }) => (
-          <GroupItem
-            name={item}
-            isActive={selectedGroup === item}
-            onPress={() => setSelectedGroup(item)}
-          />
-        )}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        _contentContainerStyle={{
-          px: 8,
-        }}
-        my="10"
-        maxH="10"
-        minH="10"
+      <GroupList
+        selectedGroup={selectedGroup}
+        onSetSelectedGroup={setSelectedGroup}
+        onSetIsLoading={setIsLoading}
       />
 
       {isLoading ? (

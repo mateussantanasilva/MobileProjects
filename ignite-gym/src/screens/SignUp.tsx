@@ -15,11 +15,11 @@ import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { api } from '@services/api'
 import { CustomError } from '@utils/CustomError'
+import { useContext } from 'react'
+import { AuthContext } from '@contexts/AuthContext'
 
 import BgImage from '@assets/background.png'
 import LogoSvg from '@assets/logo.svg'
-import { useContext } from 'react'
-import { AuthContext } from '@contexts/AuthContext'
 
 const signUpFormSchema = yup.object({
   name: yup.string().required('Preencha o campo de nome corretamente.'),
