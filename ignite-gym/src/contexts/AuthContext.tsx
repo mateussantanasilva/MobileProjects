@@ -48,11 +48,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const { data } = await api.post('/sessions', { email, password })
 
-      if (data.user && data.token) {
+      if (data.user && data.token && data.refresh_token) {
         setIsLoadingUserData(true)
 
         await saveUserStorage(data.user)
-        await saveAuthTokenStorage(data.token)
+        await saveAuthTokenStorage({
+          token: data.token,
+          refreshToken: data.refresh_token,
+        })
 
         updateUserAndToken(data.user, data.token)
       }
@@ -65,7 +68,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
-  async function signOut() {
+  const signOut = useCallback(async () => {
     try {
       setIsLoadingUserData(true)
 
@@ -80,7 +83,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } finally {
       setIsLoadingUserData(false)
     }
-  }
+  }, [])
 
   async function updateUserProfile(updatedUser: UserDTO) {
     try {
@@ -98,7 +101,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setIsLoadingUserData(true)
 
       const loggedUser = await loadUserStorage()
-      const token = await loadAuthTokenStorage()
+      const { token } = await loadAuthTokenStorage()
 
       if (loggedUser && token) updateUserAndToken(loggedUser, token)
     } catch (error) {
@@ -113,6 +116,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     loadUserAndTokenData()
   }, [loadUserAndTokenData])
+
+  useEffect(() => {
+    const subscribe = api.registerInterceptTokenManager(signOut)
+
+    return () => subscribe() // return is a memory clear function
+  }, [signOut])
 
   return (
     <AuthContext.Provider
