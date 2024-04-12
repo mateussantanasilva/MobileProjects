@@ -1,11 +1,10 @@
 {
   "expo": {
-    "name": "igniteshoesapp",
-    "slug": "igniteshoesapp",
+    "name": "igniteshoes",
+    "slug": "igniteshoes",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "cover",
@@ -18,13 +17,15 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.rocketseat.igniteshoes"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#000000"
-      }
+      },
+      "package": "com.rocketseat.igniteshoes"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -36,6 +37,9 @@
           "mode": "development"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "oneSignalAppId": "91fab676-26da-4383-9a1e-e7da97e23df7"
+    }
   }
 }
