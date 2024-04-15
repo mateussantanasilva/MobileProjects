@@ -9,6 +9,7 @@ import {
 import { Ionicons } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
 import { OSNotification } from 'react-native-onesignal'
+import { openURL } from 'expo-linking'
 
 interface NotificationProps {
   notification: OSNotification
@@ -24,12 +25,23 @@ export function Notification({ notification, onClose }: NotificationProps) {
   const { navigate } = useNavigation()
 
   function handleShowDetails() {
-    const { route, productId } =
-      notification.additionalData as AdditionalDataType
+    // gambiarra obrigatória
+    const { custom } = JSON.parse(notification.rawPayload.toString())
+    const { u: uri } = JSON.parse(custom)
 
-    if (route === 'details' && productId) {
-      navigate('details', { productId })
-      onClose()
+    if (uri) {
+      openURL(uri)
+      return onClose()
+    }
+
+    if (notification.additionalData) {
+      const { route, productId } =
+        notification.additionalData as AdditionalDataType
+
+      if (route === 'details' && productId) {
+        navigate('details', { productId })
+        return onClose()
+      }
     }
   }
 

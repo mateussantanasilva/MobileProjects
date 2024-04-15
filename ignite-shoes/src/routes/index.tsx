@@ -41,7 +41,26 @@ export function Routes() {
   }, [])
 
   return (
-    <NavigationContainer theme={theme}>
+    <NavigationContainer
+      theme={theme}
+      linking={{
+        prefixes: [
+          'igniteshoes://',
+          'com.rocketseat.igniteshoes://',
+          'exp+igniteshoes://',
+        ],
+        config: {
+          screens: {
+            details: {
+              path: '/details/:productId', // uses npx uri-scheme open igniteshoes://details/7 --android
+              parse: {
+                productId: (productId) => productId,
+              },
+            },
+          },
+        },
+      }}
+    >
       <AppRoutes />
 
       {notification?.title && (
