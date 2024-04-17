@@ -12,6 +12,9 @@ export const styles = StyleSheet.create({
     paddingBottom: 300,
     padding: 32,
   },
+  header: {
+    width: '100%',
+  },
   footer: {
     flexDirection: 'row',
     marginTop: 24,

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Alert, ScrollView, View } from 'react-native'
+import { Alert, View } from 'react-native'
 
 import { useNavigation, useRoute } from '@react-navigation/native'
 
@@ -15,18 +15,26 @@ import { ConfirmButton } from '../../components/ConfirmButton'
 import { OutlineButton } from '../../components/OutlineButton'
 import Animated, {
   Easing,
+  Extrapolation,
   interpolate,
+  runOnJS,
+  useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
   withSequence,
   withTiming,
 } from 'react-native-reanimated'
+import { FixedQuizHeader } from '../../components/FixedQuizHeader'
+import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 
 interface Params {
   id: string
 }
 
 type QuizProps = (typeof QUIZ)[0]
+
+const CARD_INCLINATION = 10
+const CARD_SKIP_AREA = -190
 
 export function Quiz() {
   const [points, setPoints] = useState(0)
@@ -43,6 +51,8 @@ export function Quiz() {
   const { id } = route.params as Params
 
   const shareShake = useSharedValue(0)
+  const shareScrollY = useSharedValue(0)
+  const shareCardPosition = useSharedValue(0)
 
   const animatedShakeStyle = useAnimatedStyle(() => {
     return {
@@ -57,6 +67,47 @@ export function Quiz() {
       ],
     }
   })
+
+  const animatedHeaderStyle = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(
+        shareScrollY.value,
+        [60, 90],
+        [1, 0],
+        Extrapolation.CLAMP,
+      ),
+    }
+  })
+
+  const animatedCardStyle = useAnimatedStyle(() => {
+    const rotate = shareCardPosition.value / CARD_INCLINATION
+
+    return {
+      transform: [
+        { translateX: shareCardPosition.value },
+        { rotate: `${rotate}deg` },
+      ],
+    }
+  })
+
+  const animatedScrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      shareScrollY.value = event.contentOffset.y
+    },
+  })
+
+  const onPan = Gesture.Pan()
+    .activateAfterLongPress(200) // avoid conflicts with ScrollView
+    .onUpdate((event) => {
+      const moveToLeft = event.translationX < 0
+
+      if (moveToLeft) shareCardPosition.value = event.translationX
+    })
+    .onEnd((event) => {
+      if (event.translationX <= CARD_SKIP_AREA) runOnJS(handleSkipConfirm)() // executes in the same thread
+
+      shareCardPosition.value = withTiming(0) // sets linearly to 0
+    })
 
   function animateShake() {
     shareShake.value = withSequence(
@@ -140,36 +191,45 @@ export function Quiz() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [points])
 
-  if (isLoading) {
-    return <Loading />
-  }
+  if (isLoading) return <Loading />
 
   return (
     <View style={styles.container}>
-      <ScrollView
+      <FixedQuizHeader
+        quiz={quiz}
+        currentQuestion={currentQuestion + 1}
+        shareScrollY={shareScrollY}
+      />
+
+      <Animated.ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.question}
+        onScroll={animatedScrollHandler}
       >
-        <QuizHeader
-          title={quiz.title}
-          currentQuestion={currentQuestion + 1}
-          totalOfQuestions={quiz.questions.length}
-        />
-
-        <Animated.View style={animatedShakeStyle}>
-          <Question
-            key={quiz.questions[currentQuestion].title}
-            question={quiz.questions[currentQuestion]}
-            alternativeSelected={alternativeSelected}
-            setAlternativeSelected={setAlternativeSelected}
+        <Animated.View style={[styles.header, animatedHeaderStyle]}>
+          <QuizHeader
+            title={quiz.title}
+            currentQuestion={currentQuestion + 1}
+            totalOfQuestions={quiz.questions.length}
           />
         </Animated.View>
+
+        <GestureDetector gesture={onPan}>
+          <Animated.View style={[animatedShakeStyle, animatedCardStyle]}>
+            <Question
+              key={quiz.questions[currentQuestion].title}
+              question={quiz.questions[currentQuestion]}
+              alternativeSelected={alternativeSelected}
+              setAlternativeSelected={setAlternativeSelected}
+            />
+          </Animated.View>
+        </GestureDetector>
 
         <View style={styles.footer}>
           <OutlineButton title="Parar" onPress={handleStop} />
           <ConfirmButton onPress={handleConfirm} />
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
     </View>
   )
 }
