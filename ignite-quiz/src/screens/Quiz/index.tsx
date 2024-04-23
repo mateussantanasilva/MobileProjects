@@ -1,13 +1,9 @@
-import { useEffect, useState } from 'react'
-import { Alert, View } from 'react-native'
-
+import { useCallback, useEffect, useState } from 'react'
+import { Alert, BackHandler, View } from 'react-native'
 import { useNavigation, useRoute } from '@react-navigation/native'
-
 import { styles } from './styles'
-
 import { QUIZ } from '../../data/quiz'
 import { historyAdd } from '../../storage/quizHistoryStorage'
-
 import { Loading } from '../../components/Loading'
 import { Question } from '../../components/Question'
 import { QuizHeader } from '../../components/QuizHeader'
@@ -26,6 +22,9 @@ import Animated, {
 } from 'react-native-reanimated'
 import { FixedQuizHeader } from '../../components/FixedQuizHeader'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
+import { OverlayFeedback } from '../../components/OverlayFeedback'
+import { Audio } from 'expo-av'
+import * as Haptics from 'expo-haptics'
 
 interface Params {
   id: string
@@ -41,6 +40,7 @@ export function Quiz() {
   const [isLoading, setIsLoading] = useState(true)
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [quiz, setQuiz] = useState<QuizProps>({} as QuizProps)
+  const [statusReply, setStatusReply] = useState(0)
   const [alternativeSelected, setAlternativeSelected] = useState<null | number>(
     null,
   )
@@ -50,16 +50,16 @@ export function Quiz() {
   const route = useRoute()
   const { id } = route.params as Params
 
-  const shareShake = useSharedValue(0)
-  const shareScrollY = useSharedValue(0)
-  const shareCardPosition = useSharedValue(0)
+  const sharedShake = useSharedValue(0)
+  const sharedScrollY = useSharedValue(0)
+  const sharedCardPosition = useSharedValue(0)
 
   const animatedShakeStyle = useAnimatedStyle(() => {
     return {
       transform: [
         {
           translateX: interpolate(
-            shareShake.value,
+            sharedShake.value,
             [0, 0.5, 1, 1.5, 2, 2.5, 3], // possible values
             [0, -15, 0, 15, 0, -15, 0], // possible styles bases on values
           ),
@@ -71,7 +71,7 @@ export function Quiz() {
   const animatedHeaderStyle = useAnimatedStyle(() => {
     return {
       opacity: interpolate(
-        shareScrollY.value,
+        sharedScrollY.value,
         [60, 90],
         [1, 0],
         Extrapolation.CLAMP,
@@ -80,11 +80,11 @@ export function Quiz() {
   })
 
   const animatedCardStyle = useAnimatedStyle(() => {
-    const rotate = shareCardPosition.value / CARD_INCLINATION
+    const rotate = sharedCardPosition.value / CARD_INCLINATION
 
     return {
       transform: [
-        { translateX: shareCardPosition.value },
+        { translateX: sharedCardPosition.value },
         { rotate: `${rotate}deg` },
       ],
     }
@@ -92,7 +92,7 @@ export function Quiz() {
 
   const animatedScrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
-      shareScrollY.value = event.contentOffset.y
+      sharedScrollY.value = event.contentOffset.y
     },
   })
 
@@ -101,20 +101,36 @@ export function Quiz() {
     .onUpdate((event) => {
       const moveToLeft = event.translationX < 0
 
-      if (moveToLeft) shareCardPosition.value = event.translationX
+      if (moveToLeft) sharedCardPosition.value = event.translationX
     })
     .onEnd((event) => {
       if (event.translationX <= CARD_SKIP_AREA) runOnJS(handleSkipConfirm)() // executes in the same thread
 
-      shareCardPosition.value = withTiming(0) // sets linearly to 0
+      sharedCardPosition.value = withTiming(0) // sets linearly to 0
     })
 
-  function animateShake() {
-    shareShake.value = withSequence(
-      // sets value as interval from 0 (initial value) to 3 to 0
+  async function animateShake() {
+    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
+
+    sharedShake.value = withSequence(
+      // sets value as interval from 0 (initial value) to 3 to 0 - show and hide
       withTiming(3, { duration: 400, easing: Easing.bounce }),
-      withTiming(0),
+      withTiming(0, undefined, (finished) => {
+        'worklet' // enable js code block
+        finished && runOnJS(handleNextQuestion)()
+      }),
     )
+  }
+
+  async function playSound(isCorrect: boolean) {
+    const file = isCorrect
+      ? require('../../assets/correct.mp3')
+      : require('../../assets/wrong.mp3')
+
+    const { sound } = await Audio.Sound.createAsync(file, { shouldPlay: true }) // auto start
+
+    await sound.setPositionAsync(0) // set to start at the beginning
+    await sound.playAsync()
   }
 
   function handleSkipConfirm() {
@@ -154,14 +170,19 @@ export function Quiz() {
 
     if (quiz.questions[currentQuestion].correct === alternativeSelected) {
       setPoints((prevState) => prevState + 1)
+
+      await playSound(true)
+      setStatusReply(1)
     } else {
+      await playSound(false)
+      setStatusReply(2)
       animateShake()
     }
 
     setAlternativeSelected(null)
   }
 
-  function handleStop() {
+  const handleStop = useCallback(() => {
     Alert.alert('Parar', 'Deseja parar agora?', [
       {
         text: 'Não',
@@ -175,7 +196,7 @@ export function Quiz() {
     ])
 
     return true
-  }
+  }, [navigate])
 
   useEffect(() => {
     const quizSelected = QUIZ.filter((item) => item.id === id)[0]
@@ -183,6 +204,16 @@ export function Quiz() {
     setIsLoading(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    // works on Android - physical button and gesture
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleStop,
+    )
+
+    return () => backHandler.remove()
+  }, [handleStop])
 
   useEffect(() => {
     if (quiz.questions) {
@@ -195,10 +226,12 @@ export function Quiz() {
 
   return (
     <View style={styles.container}>
+      <OverlayFeedback status={statusReply} />
+
       <FixedQuizHeader
         quiz={quiz}
         currentQuestion={currentQuestion + 1}
-        shareScrollY={shareScrollY}
+        shareScrollY={sharedScrollY}
       />
 
       <Animated.ScrollView
@@ -221,6 +254,7 @@ export function Quiz() {
               question={quiz.questions[currentQuestion]}
               alternativeSelected={alternativeSelected}
               setAlternativeSelected={setAlternativeSelected}
+              onUnmount={() => setStatusReply(0)}
             />
           </Animated.View>
         </GestureDetector>
