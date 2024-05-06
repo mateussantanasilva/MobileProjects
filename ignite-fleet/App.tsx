@@ -8,6 +8,10 @@ import {
   useFonts,
 } from '@expo-google-fonts/roboto'
 import { Loading } from './src/components/Loading'
+import { AppProvider, UserProvider } from '@realm/react'
+import { REALM_APP_ID } from '@env'
+import { Routes } from './src/routes'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 export default function App() {
   const [loadedFonts] = useFonts({ Roboto_400Regular, Roboto_700Bold })
@@ -15,14 +19,22 @@ export default function App() {
   if (!loadedFonts) return <Loading />
 
   return (
-    <ThemeProvider theme={theme}>
-      <StatusBar
-        barStyle="light-content"
-        backgroundColor="transparent"
-        translucent
-      />
+    // REALM_APP_ID = MongoDB Atlas/App Service/Application/Copy ID
+    <AppProvider id={REALM_APP_ID}>
+      <ThemeProvider theme={theme}>
+        <SafeAreaProvider>
+          <StatusBar
+            barStyle="light-content"
+            backgroundColor="transparent"
+            translucent
+          />
 
-      <SignIn />
-    </ThemeProvider>
+          {/* if the user is not logged in it will call fallback  */}
+          <UserProvider fallback={SignIn}>
+            <Routes />
+          </UserProvider>
+        </SafeAreaProvider>
+      </ThemeProvider>
+    </AppProvider>
   )
 }
