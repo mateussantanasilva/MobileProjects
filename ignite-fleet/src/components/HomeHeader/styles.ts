@@ -14,7 +14,7 @@ export const Container = styled.View`
 export const Picture = styled(Image)<ImageProps>`
   width: 54px;
   height: 54px;
-  border-radius: 7px;
+  border-radius: 6px;
 `
 
 export const Greeting = styled.View`
