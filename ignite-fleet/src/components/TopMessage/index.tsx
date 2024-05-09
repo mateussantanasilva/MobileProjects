@@ -1,13 +1,11 @@
 import { useTheme } from 'styled-components/native'
 import { Container, Title } from './styles'
-import { IconProps } from 'phosphor-react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-
-type IconBoxProps = (props: IconProps) => JSX.Element
+import { SelectedIconProps } from '../../@types/SelectedIcon'
 
 interface TopMessageProps {
   title: string
-  icon?: IconBoxProps
+  icon?: SelectedIconProps
 }
 
 export function TopMessage({ title, icon: Icon }: TopMessageProps) {

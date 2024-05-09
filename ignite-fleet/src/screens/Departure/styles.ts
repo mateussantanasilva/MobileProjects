@@ -12,3 +12,10 @@ export const Content = styled.View`
   margin-top: 16px;
   padding-inline: 32px;
 `
+
+export const PermissionMessage = styled.Text`
+  text-align: center;
+  color: ${({ theme }) => theme.COLORS.GRAY_100};
+  font-size: ${({ theme }) => theme.FONT_SIZE.MD}px;
+  font-family: ${({ theme }) => theme.FONT_FAMILY.REGULAR};
+`

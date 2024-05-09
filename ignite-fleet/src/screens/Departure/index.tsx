@@ -1,9 +1,9 @@
-import { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { BackHeader } from '../../components/BackHeader'
 import { Button } from '../../components/Button'
 import { LicensePlateInput } from '../../components/LicensePlateInput'
 import { TextAreaInput } from '../../components/TextAreaInput'
-import { Container, Content } from './styles'
+import { Container, Content, PermissionMessage } from './styles'
 import { Alert, ScrollView, TextInput } from 'react-native'
 import { validateLicensePlate } from '../../utils/validateLicensePlate'
 import { useRealm } from '../../libs/realm'
@@ -11,11 +11,25 @@ import { Historic } from '../../libs/realm/schemas/Historic'
 import { useUser } from '@realm/react'
 import { useNavigation } from '@react-navigation/native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import {
+  LocationSubscription,
+  LocationAccuracy,
+  useForegroundPermissions,
+  watchPositionAsync,
+} from 'expo-location'
+import { getAddressLocation } from '../../utils/getAddressLocation'
+import { Loading } from '../../components/Loading'
+import { LocationInfo } from '../../components/LocationInfo'
+import { Car } from 'phosphor-react-native'
 
 export function Departure() {
   const [isRegistering, setIsRegistering] = useState(false)
   const [licensePlate, setLicensePlate] = useState('')
   const [description, setDescription] = useState('')
+
+  const [isLoadingLocation, setIsLoadingLocation] = useState(true)
+  const [currentAddress, setCurrentAddress] = useState<string | null>(null)
+  const [permissionStatus, requestPermission] = useForegroundPermissions()
 
   const licensePlateInputRef = useRef<TextInput>(null)
   const descriptionInputRef = useRef<TextInput>(null)
@@ -68,40 +82,84 @@ export function Departure() {
     }
   }
 
+  useEffect(() => {
+    requestPermission()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (!permissionStatus?.granted) return
+
+    let subscription: LocationSubscription
+
+    watchPositionAsync(
+      {
+        accuracy: LocationAccuracy.High,
+        timeInterval: 1000,
+      },
+      (location) => {
+        getAddressLocation(location.coords)
+          .then((address) => address && setCurrentAddress(address))
+          .finally(() => setIsLoadingLocation(false))
+      },
+    ).then((response) => (subscription = response))
+
+    // removes the listener when unmounting the component
+    return () => subscription && subscription.remove()
+  }, [permissionStatus])
+
+  if (isLoadingLocation) return <Loading />
+
   return (
     <Container>
       <BackHeader title="Saída" />
 
-      <KeyboardAwareScrollView extraHeight={100}>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <Content>
-            <LicensePlateInput
-              ref={licensePlateInputRef}
-              label="Placa do veículo"
-              placeholder="BRA1234"
-              returnKeyType="next"
-              onSubmitEditing={() => descriptionInputRef.current?.focus()}
-              onChangeText={setLicensePlate}
-            />
+      {!permissionStatus?.granted ? (
+        <PermissionMessage>
+          Você precisa permitir que o aplicativo tenha acesso a localização para
+          utilizar essa funcionalidade. Por favor, acesse as configurações do
+          seu dispositivo para conceder essa permissão.
+        </PermissionMessage>
+      ) : (
+        <KeyboardAwareScrollView extraHeight={100}>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <Content>
+              {currentAddress && (
+                <LocationInfo
+                  icon={Car}
+                  label="Localização atual"
+                  description={currentAddress}
+                />
+              )}
 
-            <TextAreaInput
-              ref={descriptionInputRef}
-              label="Finalidade"
-              placeholder="Vou utilizar o carro para..."
-              returnKeyType="send"
-              blurOnSubmit // for multiline
-              onSubmitEditing={handleRegisterDeparture}
-              onChangeText={setDescription}
-            />
+              <LicensePlateInput
+                ref={licensePlateInputRef}
+                label="Placa do veículo"
+                placeholder="BRA1234"
+                returnKeyType="next"
+                onSubmitEditing={() => descriptionInputRef.current?.focus()}
+                onChangeText={setLicensePlate}
+              />
 
-            <Button
-              title="Registrar Saída"
-              isLoading={isRegistering}
-              onPress={handleRegisterDeparture}
-            />
-          </Content>
-        </ScrollView>
-      </KeyboardAwareScrollView>
+              <TextAreaInput
+                ref={descriptionInputRef}
+                label="Finalidade"
+                placeholder="Vou utilizar o carro para..."
+                returnKeyType="send"
+                blurOnSubmit // for multiline
+                onSubmitEditing={handleRegisterDeparture}
+                onChangeText={setDescription}
+              />
+
+              <Button
+                title="Registrar Saída"
+                isLoading={isRegistering}
+                onPress={handleRegisterDeparture}
+              />
+            </Content>
+          </ScrollView>
+        </KeyboardAwareScrollView>
+      )}
     </Container>
   )
 }
