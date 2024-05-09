@@ -31,6 +31,16 @@ export const Description = styled.Text`
   text-align: justify;
 `
 
+export const SyncMessage = styled.Text`
+  flex: 1;
+  margin: 14px 32px;
+
+  text-align: center;
+  color: ${({ theme }) => theme.COLORS.GRAY_300};
+  font-size: ${({ theme }) => theme.FONT_SIZE.SM}px;
+  font-family: ${({ theme }) => theme.FONT_FAMILY.REGULAR};
+`
+
 export const Footer = styled.View`
   flex-direction: row;
   gap: 16px;

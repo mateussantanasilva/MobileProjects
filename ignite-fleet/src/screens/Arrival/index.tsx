@@ -6,6 +6,7 @@ import {
   Footer,
   Label,
   LicensePlate,
+  SyncMessage,
 } from './styles'
 import { BackHeader } from '../../components/BackHeader'
 import { Button } from '../../components/Button'
@@ -15,12 +16,16 @@ import { useObject, useRealm } from '../../libs/realm'
 import { Historic } from '../../libs/realm/schemas/Historic'
 import { BSON } from 'realm'
 import { Alert } from 'react-native'
+import { useEffect, useState } from 'react'
+import { getLastSyncTimestamp } from '../../libs/mmkv'
 
 interface RouteParams {
   id: string
 }
 
 export function Arrival() {
+  const [dataNotSynced, setDataNotSynced] = useState(false)
+
   const route = useRoute()
   const { id } = route.params as RouteParams
 
@@ -70,6 +75,13 @@ export function Arrival() {
     }
   }
 
+  useEffect(() => {
+    const lastSync = getLastSyncTimestamp()
+
+    if (lastSync && historic)
+      setDataNotSynced(historic?.updated_at.getTime() > lastSync)
+  }, [historic])
+
   return (
     <Container>
       <BackHeader title={title} />
@@ -81,6 +93,8 @@ export function Arrival() {
         <Label>Finalidade</Label>
         <Description>{historic?.description}</Description>
       </Content>
+
+      {dataNotSynced && <SyncMessage>Sincronização pendente</SyncMessage>}
 
       {historic?.status === 'departure' && (
         <Footer>

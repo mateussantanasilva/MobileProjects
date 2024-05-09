@@ -3,7 +3,7 @@ import { Container } from './styles'
 import { TouchableOpacityProps } from 'react-native'
 import { useTheme } from 'styled-components/native'
 
-export type IconBoxProps = (props: IconProps) => JSX.Element
+type IconBoxProps = (props: IconProps) => JSX.Element
 
 interface IconButton extends TouchableOpacityProps {
   icon: IconBoxProps

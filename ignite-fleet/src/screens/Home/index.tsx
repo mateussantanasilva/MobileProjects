@@ -1,22 +1,30 @@
-import { useNavigation } from '@react-navigation/native'
-import { CarStatus } from '../../components/CarStatus'
-import { HomeHeader } from '../../components/HomeHeader'
-import { Container, Content, Label, Title } from './styles'
+import { useEffect, useState } from 'react'
+import { Alert, FlatList } from 'react-native'
+import { VehicleDTO } from '../../@types/VehicleDTO'
+import { useUser } from '@realm/react'
+import { ProgressDirection, ProgressMode } from 'realm'
 import { useQuery, useRealm } from '../../libs/realm'
 import { Historic } from '../../libs/realm/schemas/Historic'
-import React, { useEffect, useState } from 'react'
-import { Alert, FlatList } from 'react-native'
-import { HistoricCard } from '../../components/HistoricCard'
+import { useNavigation } from '@react-navigation/native'
 import dayjs from 'dayjs'
-import { VehicleDTO } from '../../@types/VehicleDTO'
+import { getLastSyncTimestamp, saveLastSyncTimestamp } from '../../libs/mmkv'
+import Toast from 'react-native-toast-message'
+import { CloudArrowUp } from 'phosphor-react-native'
+import { Container, Content, Label, Title } from './styles'
+import { CarStatus } from '../../components/CarStatus'
+import { HomeHeader } from '../../components/HomeHeader'
+import { HistoricCard } from '../../components/HistoricCard'
+import { TopMessage } from '../../components/TopMessage'
 
 export function Home() {
   const [vehicleInUse, setVehicleInUse] = useState<Historic | null>(null)
   const [vehicleHistoric, setVehicleHistoric] = useState<VehicleDTO[]>([])
+  const [percentageToSync, setPercentageToSync] = useState<string | null>(null)
 
   const { navigate } = useNavigation()
 
   const realm = useRealm()
+  const user = useUser()
   const historic = useQuery(Historic)
 
   function handleRegisterMovement() {
@@ -46,6 +54,8 @@ export function Home() {
         'status = "arrival" SORT(created_at DESC)',
       )
 
+      const lastSync = getLastSyncTimestamp()
+
       const formattedHistoric = response.map((vehicle) => {
         return {
           id: vehicle._id.toString(),
@@ -53,7 +63,8 @@ export function Home() {
           createdAt: dayjs(vehicle.created_at).format(
             '[Saída em] DD/MM/YYYY [às] HH:mm',
           ),
-          isSync: false,
+          isSync:
+            (lastSync && lastSync > vehicle.updated_at.getTime()) || false,
         }
       })
 
@@ -62,6 +73,23 @@ export function Home() {
       console.error(error)
       Alert.alert('Error', 'Não foi possível carregar o histórico de veículos.')
     }
+  }
+
+  function notifyProgress(transferred: number, transfeable: number) {
+    const percentage = (transferred / transfeable) * 100
+
+    if (percentage === 100) {
+      saveLastSyncTimestamp()
+      fetchHistoric()
+      setPercentageToSync(null)
+
+      Toast.show({
+        type: 'info',
+        text1: 'Todos os dados estão sincronizados.',
+      })
+    }
+
+    setPercentageToSync(`${percentage.toFixed(0)}% sincronizado.`)
   }
 
   useEffect(() => {
@@ -86,8 +114,38 @@ export function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [historic])
 
+  useEffect(() => {
+    realm.subscriptions.update((mutableSubs, realm) => {
+      const historicByUserQuery = realm
+        .objects('Historic')
+        .filtered(`user_id = "${user.id}"`)
+
+      // data synchronization
+      mutableSubs.add(historicByUserQuery, { name: 'historic_by_user' })
+    })
+  }, [realm, user.id])
+
+  useEffect(() => {
+    const syncSession = realm.syncSession
+
+    if (!syncSession) return
+
+    syncSession.addProgressNotification(
+      ProgressDirection.Upload,
+      ProgressMode.ReportIndefinitely,
+      notifyProgress,
+    )
+
+    return () => syncSession.removeProgressNotification(notifyProgress)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
     <Container>
+      {percentageToSync && (
+        <TopMessage title={percentageToSync} icon={CloudArrowUp} />
+      )}
+
       <HomeHeader />
 
       <Content>

@@ -7,7 +7,6 @@ export const Container = styled.View`
 
   width: 100%;
   padding: 0 32px 24px;
-  z-index: 1;
 
   background-color: ${({ theme }) => theme.COLORS.GRAY_700};
 `
