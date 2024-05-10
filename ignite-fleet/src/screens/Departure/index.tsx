@@ -16,11 +16,13 @@ import {
   LocationAccuracy,
   useForegroundPermissions,
   watchPositionAsync,
+  LocationObjectCoords,
 } from 'expo-location'
 import { getAddressLocation } from '../../utils/getAddressLocation'
 import { Loading } from '../../components/Loading'
 import { LocationInfo } from '../../components/LocationInfo'
 import { Car } from 'phosphor-react-native'
+import { Map } from '../../components/Map'
 
 export function Departure() {
   const [isRegistering, setIsRegistering] = useState(false)
@@ -28,6 +30,8 @@ export function Departure() {
   const [description, setDescription] = useState('')
 
   const [isLoadingLocation, setIsLoadingLocation] = useState(true)
+  const [currentCoords, setCurrentCoords] =
+    useState<LocationObjectCoords | null>(null)
   const [currentAddress, setCurrentAddress] = useState<string | null>(null)
   const [permissionStatus, requestPermission] = useForegroundPermissions()
 
@@ -98,6 +102,8 @@ export function Departure() {
         timeInterval: 1000,
       },
       (location) => {
+        setCurrentCoords(location.coords)
+
         getAddressLocation(location.coords)
           .then((address) => address && setCurrentAddress(address))
           .finally(() => setIsLoadingLocation(false))
@@ -123,6 +129,8 @@ export function Departure() {
       ) : (
         <KeyboardAwareScrollView extraHeight={100}>
           <ScrollView showsVerticalScrollIndicator={false}>
+            {currentCoords && <Map coordinates={[currentCoords]} />}
+
             <Content>
               {currentAddress && (
                 <LocationInfo
