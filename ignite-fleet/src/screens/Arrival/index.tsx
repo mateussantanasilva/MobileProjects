@@ -18,6 +18,7 @@ import { BSON } from 'realm'
 import { Alert } from 'react-native'
 import { useEffect, useState } from 'react'
 import { getLastSyncTimestamp } from '../../libs/mmkv'
+import { stopLocationTask } from '../../tasks/backgroundLocationTask'
 
 interface RouteParams {
   id: string
@@ -53,13 +54,15 @@ export function Arrival() {
     ])
   }
 
-  function handleRegisterArrival() {
+  async function handleRegisterArrival() {
     try {
       if (!historic)
         return Alert.alert(
           'Erro',
           'Não foi possível obter os dados para registrar a chegada do veículo.',
         )
+
+      await stopLocationTask()
 
       // transaction
       realm.write(() => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { BackHeader } from '../../components/BackHeader'
 import { Button } from '../../components/Button'
 import { LicensePlateInput } from '../../components/LicensePlateInput'
@@ -17,12 +17,14 @@ import {
   useForegroundPermissions,
   watchPositionAsync,
   LocationObjectCoords,
+  requestBackgroundPermissionsAsync,
 } from 'expo-location'
 import { getAddressLocation } from '../../utils/getAddressLocation'
 import { Loading } from '../../components/Loading'
 import { LocationInfo } from '../../components/LocationInfo'
 import { Car } from 'phosphor-react-native'
 import { Map } from '../../components/Map'
+import { startLocationTask } from '../../tasks/backgroundLocationTask'
 
 export function Departure() {
   const [isRegistering, setIsRegistering] = useState(false)
@@ -43,7 +45,7 @@ export function Departure() {
 
   const { goBack } = useNavigation()
 
-  function handleRegisterDeparture() {
+  async function handleRegisterDeparture() {
     try {
       if (!validateLicensePlate(licensePlate)) {
         licensePlateInputRef.current?.focus()
@@ -63,7 +65,26 @@ export function Departure() {
         )
       }
 
+      if (!currentCoords?.latitude && !currentCoords?.longitude)
+        return Alert.alert(
+          'Localização',
+          'Não foi possível obter a localização atual. Tente novamente.',
+        )
+
       setIsRegistering(true)
+
+      const backgroundPermissions = await requestBackgroundPermissionsAsync()
+
+      if (!backgroundPermissions) {
+        setIsRegistering(false)
+
+        return Alert.alert(
+          'Localização',
+          'É necessário permitir o acesso a localização em segundo plano. Acesse as configurações do dispositivo e habilite "Permitir o tempo todo".',
+        )
+      }
+
+      await startLocationTask()
 
       // transaction (CREATE)
       realm.write(() => {
@@ -78,6 +99,7 @@ export function Departure() {
       })
 
       Alert.alert('Saída', 'Saída do veículo registrada com sucesso!')
+      setIsRegistering(false)
       goBack()
     } catch (error) {
       setIsRegistering(false)

@@ -21,6 +21,10 @@ module.exports = {
       config: {
         googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
       },
+      infoPlist: {
+        // request permission to run in the background
+        UIBackgroundModes: ['location'],
+      },
     },
     android: {
       adaptiveIcon: {
@@ -28,6 +32,12 @@ module.exports = {
         backgroundColor: '#202024',
       },
       package: 'com.mateussantanasilva.ignitefleet',
+      permissions: [
+        // request permission to run in the background
+        'ACCESS_FINE_LOCATION',
+        'ACCESS_COARSE_LOCATION',
+        'ACCESS_BACKGROUND_LOCATION',
+      ],
       config: {
         googleMaps: {
           apiKey: process.env.GOOGLE_MAPS_API_KEY,
