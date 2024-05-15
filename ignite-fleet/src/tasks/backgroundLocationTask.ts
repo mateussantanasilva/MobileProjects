@@ -6,7 +6,7 @@ import {
   stopLocationUpdatesAsync,
 } from 'expo-location'
 import * as TaskManager from 'expo-task-manager'
-import { saveLocationToStorage } from '../libs/mmkv'
+import { removeStoredLocations, saveLocationToStorage } from '../libs/mmkv'
 
 interface TaskProps {
   data: {
@@ -60,7 +60,10 @@ export async function stopLocationTask() {
     const hasStarted =
       await hasStartedLocationUpdatesAsync(BACKGROUND_TASK_NAME)
 
-    if (hasStarted) await stopLocationUpdatesAsync(BACKGROUND_TASK_NAME)
+    if (hasStarted) {
+      await stopLocationUpdatesAsync(BACKGROUND_TASK_NAME)
+      removeStoredLocations()
+    }
   } catch (error) {
     console.error(error)
   }

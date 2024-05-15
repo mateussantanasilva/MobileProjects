@@ -13,9 +13,18 @@ export const Content = styled.View`
   padding-inline: 32px;
 `
 
+export const MessageContent = styled.View`
+  flex: 1;
+  justify-content: center;
+
+  padding-inline: 32px;
+`
+
 export const PermissionMessage = styled.Text`
   text-align: center;
   color: ${({ theme }) => theme.COLORS.GRAY_100};
   font-size: ${({ theme }) => theme.FONT_SIZE.MD}px;
   font-family: ${({ theme }) => theme.FONT_FAMILY.REGULAR};
+
+  margin-bottom: 44px;
 `

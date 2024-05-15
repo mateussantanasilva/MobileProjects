@@ -2,10 +2,13 @@ import { IconBox } from '../IconBox'
 import { Container, Description, Information, Label } from './styles'
 import { SelectedIconProps } from '../../@types/SelectedIcon'
 
-interface LocationInfoProps {
-  icon: SelectedIconProps
+export interface LocationContentProps {
   label: string
   description: string
+}
+
+interface LocationInfoProps extends LocationContentProps {
+  icon: SelectedIconProps
 }
 
 export function LocationInfo({ icon, label, description }: LocationInfoProps) {

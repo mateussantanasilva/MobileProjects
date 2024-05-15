@@ -3,7 +3,7 @@ import { BackHeader } from '../../components/BackHeader'
 import { Button } from '../../components/Button'
 import { LicensePlateInput } from '../../components/LicensePlateInput'
 import { TextAreaInput } from '../../components/TextAreaInput'
-import { Container, Content, PermissionMessage } from './styles'
+import { Container, Content, MessageContent, PermissionMessage } from './styles'
 import { Alert, ScrollView, TextInput } from 'react-native'
 import { validateLicensePlate } from '../../utils/validateLicensePlate'
 import { useRealm } from '../../libs/realm'
@@ -25,6 +25,7 @@ import { LocationInfo } from '../../components/LocationInfo'
 import { Car } from 'phosphor-react-native'
 import { Map } from '../../components/Map'
 import { startLocationTask } from '../../tasks/backgroundLocationTask'
+import { openSettings } from '../../utils/openSettings'
 
 export function Departure() {
   const [isRegistering, setIsRegistering] = useState(false)
@@ -81,6 +82,12 @@ export function Departure() {
         return Alert.alert(
           'Localização',
           'É necessário permitir o acesso a localização em segundo plano. Acesse as configurações do dispositivo e habilite "Permitir o tempo todo".',
+          [
+            {
+              text: 'Abrir configurações',
+              onPress: openSettings,
+            },
+          ],
         )
       }
 
@@ -94,6 +101,13 @@ export function Departure() {
             user_id: user.id,
             license_plate: licensePlate.toUpperCase(),
             description,
+            coords: [
+              {
+                latitude: currentCoords.latitude,
+                longitude: currentCoords.longitude,
+                timestamp: new Date().getTime(),
+              },
+            ],
           }),
         )
       })
@@ -143,11 +157,15 @@ export function Departure() {
       <BackHeader title="Saída" />
 
       {!permissionStatus?.granted ? (
-        <PermissionMessage>
-          Você precisa permitir que o aplicativo tenha acesso a localização para
-          utilizar essa funcionalidade. Por favor, acesse as configurações do
-          seu dispositivo para conceder essa permissão.
-        </PermissionMessage>
+        <MessageContent>
+          <PermissionMessage>
+            Você precisa permitir que o aplicativo tenha acesso a localização
+            para utilizar essa funcionalidade. Por favor, acesse as
+            configurações do seu dispositivo para conceder essa permissão.
+          </PermissionMessage>
+
+          <Button title="Abrir configurações" onPress={openSettings} />
+        </MessageContent>
       ) : (
         <KeyboardAwareScrollView extraHeight={100}>
           <ScrollView showsVerticalScrollIndicator={false}>
