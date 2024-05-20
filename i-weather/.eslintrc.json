@@ -2,6 +2,8 @@
   "extends": "@rocketseat/eslint-config/react",
   "rules": {
     "camelcase": "off",
-    "react-hooks/exhaustive-deps": "off"
-  }
+    "react-hooks/exhaustive-deps": "off",
+    "@typescript-eslint/no-var-requires": "off"
+  },
+  "plugins": ["testing-library"]
 }
