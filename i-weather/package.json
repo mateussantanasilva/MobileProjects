@@ -9,7 +9,7 @@
     "web": "expo start --web",
     "lint": "eslint --fix --ext .ts,.tsx .",
     "test": "jest",
-    "test:watch": "jest --watch",
+    "test:watch": "jest --watchAll",
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
