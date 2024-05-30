@@ -9,19 +9,21 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#13131A"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mateussantanasilva.iweather"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+        "backgroundColor": "#13131A"
+      },
+      "package": "com.mateussantanasilva.iweather"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -31,6 +33,11 @@
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "4e836294-41e1-4553-bc07-49c5fed39f8a"
+      }
+    }
   }
 }
