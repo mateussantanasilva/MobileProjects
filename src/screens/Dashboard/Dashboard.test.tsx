@@ -3,6 +3,7 @@ import {
   fireEvent,
   render,
   screen,
+  waitFor,
   waitForElementToBeRemoved,
 } from '@__tests__/customRender'
 import { api } from '@services/api'
@@ -30,9 +31,10 @@ describe('Screen: Dashboard', () => {
 
     render(<Dashboard />)
 
-    const city = await screen.findByText(/minas/i, {}, { timeout: 3000 })
-
-    expect(city).toBeTruthy()
+    await waitFor(
+      () =>
+        expect(screen.findByText(/minas/i, {}, { timeout: 3000 })).toBeTruthy,
+    )
   })
 
   it('should be show another selected weather city', async () => {
