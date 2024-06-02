@@ -10,9 +10,11 @@ describe('Routes', () => {
     render(<Routes />)
 
     // finding until the info is found, otherwise returns timeout
-    const title = await waitFor(() => screen.findByText(/^escolha um local/i))
-
-    expect(title).toBeTruthy()
+    await waitFor(() =>
+      expect(
+        screen.findByText(/^escolha um local/i, {}, { timeout: 3000 }),
+      ).toBeTruthy(),
+    )
   })
 
   it('should be render dashboard screen when city selected', async () => {

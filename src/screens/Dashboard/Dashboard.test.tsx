@@ -3,7 +3,6 @@ import {
   fireEvent,
   render,
   screen,
-  waitFor,
   waitForElementToBeRemoved,
 } from '@__tests__/customRender'
 import { api } from '@services/api'
@@ -31,9 +30,9 @@ describe('Screen: Dashboard', () => {
 
     render(<Dashboard />)
 
-    await waitFor(() =>
-      expect(screen.findByText(/minas/i, {}, { timeout: 3000 })).toBeTruthy(),
-    )
+    const city = await screen.findByText(/minas/i, {}, { timeout: 3000 })
+
+    expect(city).toBeTruthy()
   })
 
   it('should be show another selected weather city', async () => {
@@ -48,18 +47,15 @@ describe('Screen: Dashboard', () => {
     // queryByTestId returns null if the id does not exist
     await waitForElementToBeRemoved(() => screen.queryByTestId('loading'))
 
-    await waitFor(() =>
-      act(() => {
-        // getByTestId returns exception if the id does not exist
-        const searchInput = screen.getByTestId('search-input')
-        fireEvent.changeText(searchInput, 'São Paulo')
-      }),
-    )
+    await act(() => {
+      // getByTestId returns exception if the id does not exist
+      const searchInput = screen.getByTestId('search-input')
+      fireEvent.changeText(searchInput, 'São Paulo')
+    })
 
-    await waitFor(() => {
-      act(() => {
-        fireEvent.press(screen.getByText('São Paulo', { exact: false }))
-      })
+    await act(() => {
+      const optionCity = screen.getByText('São Paulo', { exact: false })
+      fireEvent.press(optionCity)
     })
 
     expect(screen.getByText('São Paulo', { exact: false })).toBeTruthy()
