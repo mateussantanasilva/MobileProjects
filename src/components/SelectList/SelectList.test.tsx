@@ -1,9 +1,9 @@
-import { fireEvent, render, screen } from '@testing-library/react-native'
+import { act, fireEvent, render, screen } from '@testing-library/react-native'
 import { SelectList } from '.'
 import { mockCityOptionList } from '@__tests__/mocks/mockCityOptionList'
 
 describe('Component: SelectList', () => {
-  it('should be return city details selected', () => {
+  it('should be return city details selected', async () => {
     const onPress = jest.fn()
 
     render(
@@ -14,10 +14,12 @@ describe('Component: SelectList', () => {
       />,
     )
 
-    // get element with this content (<Text />)
-    // uses regex or getByText('Campo', { exact: false })
-    const selectedCity = screen.getByText(/campo/i)
-    fireEvent.press(selectedCity)
+    await act(() => {
+      // get element with this content (<Text />)
+      // uses regex or getByText('Campo', { exact: false })
+      const selectedCity = screen.getByText(/campo/i)
+      fireEvent.press(selectedCity)
+    })
 
     expect(onPress).toHaveBeenCalledWith(mockCityOptionList[1])
   })

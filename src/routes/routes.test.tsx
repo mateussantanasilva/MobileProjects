@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@__tests__/customRender'
+import { act, render, screen, waitFor } from '@__tests__/customRender'
 import { Routes } from '.'
 import { saveStorageCity } from '@libs/asyncStorage/cityStorage'
 import { mockCityToStore } from '@__tests__/mocks/mockCityToStore'
@@ -22,7 +22,7 @@ describe('Routes', () => {
 
     jest.spyOn(api, 'get').mockResolvedValue({ data: mockWeatherAPIResponse })
 
-    await waitFor(() => render(<Routes />))
+    await act(() => waitFor(() => render(<Routes />)))
 
     const title = screen.getByText(mockCityToStore.name)
 
