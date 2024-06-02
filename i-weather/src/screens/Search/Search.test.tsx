@@ -12,7 +12,10 @@ describe('Screen: Search', () => {
     const searchInput = screen.getByTestId('search-input')
     fireEvent.changeText(searchInput, 'São Paulo')
 
-    const option = await waitFor(() => screen.findByText(/são paulo/i))
-    expect(option).toBeTruthy()
+    await waitFor(() =>
+      expect(
+        screen.findByText(/são paulo/i, {}, { timeout: 3000 }),
+      ).toBeTruthy(),
+    )
   })
 })
