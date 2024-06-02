@@ -7,7 +7,7 @@ on:
 
 jobs:
   CI:
-    name: Continuous Integrati'on
+    name: Continuous Integration
     runs-on: ubuntu-latest
 
     steps:
@@ -17,7 +17,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 20.x
+          node-version: 20.9.0
 
       - name: Install dependencies
         run: npm install
