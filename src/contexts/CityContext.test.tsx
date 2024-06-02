@@ -12,9 +12,9 @@ describe('Context: CityContext', () => {
       // handle async requests
       act(() => {
         result.current.handleChanceCity(mockCityToStore)
-
-        expect(result.current.city?.name).toBe('São Paulo')
       }),
     )
+
+    expect(result.current.city?.name).toBe('São Paulo')
   })
 })

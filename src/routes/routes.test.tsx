@@ -10,17 +10,15 @@ describe('Routes', () => {
     render(<Routes />)
 
     // finding until the info is found, otherwise returns timeout
-    await waitFor(() =>
-      expect(
-        screen.findByText(/^escolha um local/i, {}, { timeout: 3000 }),
-      ).toBeTruthy(),
-    )
+    const title = await waitFor(() => screen.findByText(/^escolha um local/i))
+
+    expect(title).toBeTruthy()
   })
 
   it('should be render dashboard screen when city selected', async () => {
-    await saveStorageCity(mockCityToStore)
-
     jest.spyOn(api, 'get').mockResolvedValue({ data: mockWeatherAPIResponse })
+
+    await saveStorageCity(mockCityToStore)
 
     await act(() => waitFor(() => render(<Routes />)))
 

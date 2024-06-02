@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react-native'
+import { fireEvent, render, screen } from '@testing-library/react-native'
 import { SelectList } from '.'
 import { mockCityOptionList } from '@__tests__/mocks/mockCityOptionList'
 
@@ -14,12 +14,10 @@ describe('Component: SelectList', () => {
       />,
     )
 
-    await act(() => {
-      // get element with this content (<Text />)
-      // uses regex or getByText('Campo', { exact: false })
-      const selectedCity = screen.getByText(/campo/i)
-      fireEvent.press(selectedCity)
-    })
+    // get element with this content (<Text />)
+    // uses regex or getByText('Campo', { exact: false })
+    const selectedCity = screen.getByText(/campo/i)
+    fireEvent.press(selectedCity)
 
     expect(onPress).toHaveBeenCalledWith(mockCityOptionList[1])
   })

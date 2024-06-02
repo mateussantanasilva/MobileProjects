@@ -15,7 +15,7 @@ import { mockApiResponseCity } from '@__tests__/mocks/mockApiResponseCity'
 describe('Screen: Dashboard', () => {
   // code equal in all tests to be executed before
   // beforeAll() is executed only once before the first test
-  beforeEach(async () => {
+  beforeAll(async () => {
     const mockStoragedCity = {
       id: '10',
       name: 'Minas Gerais',
@@ -49,16 +49,19 @@ describe('Screen: Dashboard', () => {
     // queryByTestId returns null if the id does not exist
     await waitForElementToBeRemoved(() => screen.queryByTestId('loading'))
 
-    await act(() => {
-      // getByTestId returns exception if the id does not exist
-      const searchInput = screen.getByTestId('search-input')
-      fireEvent.changeText(searchInput, 'São Paulo')
-    })
+    await waitFor(() =>
+      act(() => {
+        // getByTestId returns exception if the id does not exist
+        const searchInput = screen.getByTestId('search-input')
+        fireEvent.changeText(searchInput, 'São Paulo')
+      }),
+    )
 
-    await act(() => {
-      const optionCity = screen.getByText('São Paulo', { exact: false })
-      fireEvent.press(optionCity)
-    })
+    await waitFor(() =>
+      act(() => {
+        fireEvent.press(screen.getByText('São Paulo', { exact: false }))
+      }),
+    )
 
     expect(screen.getByText('São Paulo', { exact: false })).toBeTruthy()
   })
