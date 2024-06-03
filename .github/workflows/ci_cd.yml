@@ -1,0 +1,38 @@
+name: CI/CD-IWeather
+
+on:
+  push: 
+    branches:
+      - production
+
+jobs:
+  CI:
+    name: Continuous Integration
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.x
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+  CD:
+    name: Continuous Delivery
+      runs-on: ubuntu-latest
+
+      # create dependency on CI job
+      needs: CI
+
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v3
+
