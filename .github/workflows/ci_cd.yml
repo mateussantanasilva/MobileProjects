@@ -27,12 +27,12 @@ jobs:
 
   CD:
     name: Continuous Delivery
-      runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-      # create dependency on CI job
-      needs: CI
+    # create dependency on CI job
+    needs: CI
 
-      steps:
-        - name: Checkout repository
-          uses: actions/checkout@v3
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
