@@ -1,0 +1,37 @@
+# name: CD-IWeather
+
+# # create dependency on another workflow
+# on:
+#   workflow_run:
+#     workflows: [CI-IWeather]
+#     types: 
+#       - completed
+
+# jobs:
+#   CD:
+#     name: Continuous Delivery
+#     runs-on: ubuntu-latest
+
+#     if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v3
+
+#       - name: Setup node
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: 20.x
+      
+#       - name: Setup EAS
+#         uses: expo/expo-github-action@v8
+#         with: 
+#           eas-version: latest
+#           packager: npm
+#           # In the repository > settings > secrets and variables > actions > new secret
+#           token: ${{ secrets.EAS_EXPO_TOKEN }}
+      
+#       # Automatically creates the build and the action does't wait for the build to complete
+#       # See the build at https://expo.dev/
+#       - name: Build
+#         run: eas build --platform android --profile preview --non-interactive --no-wait

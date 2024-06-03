@@ -36,3 +36,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.x
+      
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with: 
+          eas-version: latest
+          packager: npm
+          # In the repository > settings > secrets and variables > actions > new secret
+          token: ${{ secrets.EAS_EXPO_TOKEN }}
+      
+      - name: Build
+        # Automatically creates the build and the action does't wait for the build to complete
+        # See the build at https://expo.dev/
+        run: eas build --platform android --profile preview --non-interactive --no-wait
+      
+
