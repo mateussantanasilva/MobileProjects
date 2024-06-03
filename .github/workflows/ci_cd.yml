@@ -48,6 +48,9 @@ jobs:
           packager: npm
           # In the repository > settings > secrets and variables > actions > new secret
           token: ${{ secrets.EAS_EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm install
       
       - name: Build
         # Automatically creates the build and the action does't wait for the build to complete
