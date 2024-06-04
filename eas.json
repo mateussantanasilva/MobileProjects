@@ -4,13 +4,30 @@
   },
   "build": {
     "preview": {
+      "autoIncrement": true,
       "ios": {
         "simulator": true
       },
       "android": {
-        "distribution": "internal"
+        "distribution": "internal",
+        "autoIncrement": "versionCode"
       }
     },
-    "production": {}
-  }
+    "production": {
+      "autoIncrement": true,
+      "android": {
+        "autoIncrement": "versionCode"
+      }
+    }
+  },
+  // Need access on Google Play and/or Apple Store
+  // "submit": {
+  //   "preview": {
+  //     "android": {
+  //       "track": "internal",
+  //       "serviceAccountKeyPath": "./google-services.json",
+  //       "releaseStatus": "draft"
+  //     }
+  //   }
+  // }
 }
