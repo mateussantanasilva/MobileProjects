@@ -1,12 +1,14 @@
 {
   "cli": {
-    "version": ">= 9.1.0"
+    "version": ">= 9.1.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "preview": {
       "autoIncrement": true,
       "ios": {
-        "simulator": true
+        "simulator": true,
+        "autoIncrement": "buildNumber"
       },
       "android": {
         "distribution": "internal",
@@ -17,12 +19,20 @@
       "autoIncrement": true,
       "android": {
         "autoIncrement": "versionCode"
+      },
+      "ios": {
+        "image": "latest",
+        "autoIncrement": "buildNumber"
       }
     }
-  },
+  }
   // Need access on Google Play and/or Apple Store
   // "submit": {
   //   "preview": {
+  //     "ios": {
+  //       "appleId": "email para conectar na apple store connect",
+  //       "ascAppId": "id do app na apple store connect (Apple ID)"
+  //     },
   //     "android": {
   //       "track": "internal",
   //       "serviceAccountKeyPath": "./google-services.json",
