@@ -13,7 +13,8 @@
       "android": {
         "distribution": "internal",
         "autoIncrement": "versionCode"
-      }
+      },
+      "channel": "preview"
     },
     "production": {
       "autoIncrement": true,
@@ -23,7 +24,8 @@
       "ios": {
         "image": "latest",
         "autoIncrement": "buildNumber"
-      }
+      },
+      "channel": "production"
     }
   }
   // Need access on Google Play and/or Apple Store
