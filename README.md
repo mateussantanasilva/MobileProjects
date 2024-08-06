@@ -1,6 +1,4 @@
-<div align="center">
-  <img width="200" alt="Logo" src="https://github.com/mateussantanasilva/SpaceTime/assets/78767371/da504c9c-4267-409b-98d6-305da2176fbc">
-</div>
+<img width="200" alt="Logo" src="https://github.com/mateussantanasilva/SpaceTime/assets/78767371/da504c9c-4267-409b-98d6-305da2176fbc">
 
 # Mobile Projects
 
@@ -8,7 +6,7 @@ Conjunto de projetos básicos desenvolvidos no Ignite utilizando React Native. D
 
 ## 🚀 Tecnologias
 
-Estes projetos foram desenvolvidos com tecnologias como:
+Os projetos foram desenvolvidos com tecnologias como:
 
 - [Expo](https://docs.expo.dev/)
 - [TypeScript](https://www.typescriptlang.org/)
@@ -34,21 +32,22 @@ Estes projetos foram desenvolvidos com tecnologias como:
   
 ## 💻 Acessar os projetos online
 
-| Nome             | Descrição                                                                            | Repositório                                                                                         |
-|------------------|--------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------|
-| Ignite Shop      | E-commerce para compras de produtos originais da Rocketseat utilizando Stripe.       | [Veja o Repositório](https://github.com/mateussantanasilva/IgniteProjects/tree/main/IgniteShop)     |
-| Github Blog      | Blog que usa a API do GitHub para buscar issues de um repositório.                   | [Veja o Repositório]()     |
-| DT Money         | Permite controle financeiro que utiliza o JSON server para simulação de uso de API.  | [Veja o Repositório]()        |
-| Coffee Delivery  | Loja com um catálogo variado de cafés que permite relizar os pedidos que desejar  .  | [Veja o Repositório]() |
-| Ignite Timer     | Cronometro para realização de tarefas, com de histórico de todas as atividades.      | [Veja o Repositório]()    |
-| ToDo List        | Lista de tarefas para controlar todos os compromissos que forem cadastrados.         | [Veja o Repositório]()       |
-| Ignite Feed      | Simulação de uma rede social inicial para demonstrar conceitos do React.             | [Veja o Repositório]()     |
+| Nome          | Descrição                                                                            | Repositório                                                                                         |
+|---------------|--------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------|
+| IWeather      | Previsão do tempo usando API com testes automatizados e processos de CI/CD.          | [Veja o Repositório](https://github.com/mateussantanasilva/MobileProjects/tree/main/i-weather)      |
+| Ignite Fleet  | Controle de uso de veículos com geolocalização e mapas usando uma conta do Google.   | [Veja o Repositório](https://github.com/mateussantanasilva/MobileProjects/tree/main/ignite-fleet)   |
+| Ignite Quiz   | Lista de quizes usando recursos de animações, sons e comportamentos do celular.      | [Veja o Repositório](https://github.com/mateussantanasilva/MobileProjects/tree/main/ignite-quiz)    |
+| Ignite Shoes  | Loja de tênis usando deep linking e push notifications para uso personalizado.       | [Veja o Repositório](https://github.com/mateussantanasilva/MobileProjects/tree/main/ignite-shoes)   |
+| Ignite Gym    | Plataforma de monitoramento de exercícios usando refresh token e NativeBase.         | [Veja o Repositório](https://github.com/mateussantanasilva/MobileProjects/tree/main/ignite-gym)     |
+| Ignite Teams  | Aplicativo para controle de turmas com times de jogadores persistidos no storage.    | [Veja o Repositório](https://github.com/mateussantanasilva/MobileProjects/tree/main/ignite-teams)   |
+| Im Here       | Lista to-do para controlar os participantes presentes em um evento definido.         | [Veja o Repositório](https://github.com/mateussantanasilva/MobileProjects/tree/main/im-here)        |
+| Nlw Expert    | Cardápio digital com função de pedido do carrinho integrado com Whatsapp.            | [Veja o Repositório](https://github.com/mateussantanasilva/MobileProjects/tree/main/nlw-expert)     |
 
 ## 💻 Acessar os projetos local
 
 ### :white_check_mark: Requisitos ###
 
-Antes de começar :checkered_flag:, você precisa ter o [Git](https://git-scm.com) e o [Node](https://nodejs.org/en/) instalados.
+Antes de começar :checkered_flag:, você precisa ter um setup para funcionar o Expo.
 
 ### :checkered_flag: Começo ###
 
